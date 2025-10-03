@@ -22,3 +22,5 @@ no-idl = []
 
 [dependencies]
 anchor-lang = { version = "0.31.1", features = ["init-if-needed"]}
+solana-security-txt = "1.1.1"
+

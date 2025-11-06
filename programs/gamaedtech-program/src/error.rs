@@ -25,4 +25,10 @@ pub enum ErrorCode {
 
     #[msg("Insufficient Stake")]
     InsufficientStake,
+
+    #[msg("No Stake Power")]
+    NoStakePower,
+
+    #[msg("You can only stake the allowed token.")]
+    InvalidTokenMint,
 }

@@ -44,7 +44,7 @@ pub struct VoteRecord {
 
 #[account]
 pub struct StakeAccount {
-    pub user: Pubkey,         // Who owns this stake
+    pub owner: Pubkey,        // Who owns this stake
     pub staked_amount: u64,   // Total tokens staked
     pub last_stake_time: i64, // For optional cooldown or reward logic
 }

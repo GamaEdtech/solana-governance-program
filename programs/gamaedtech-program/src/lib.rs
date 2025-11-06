@@ -42,4 +42,15 @@ pub mod gamaedtech_program {
     pub fn vote(ctx: Context<Vote>, agree: bool, vote_power: u64) -> Result<()> {
         proccess_vote(ctx, agree, vote_power)
     }
+    pub fn request_fund(ctx: Context<RequestFund>) -> Result<()> {
+        process_request_fund(ctx)
+    }
+
+    pub fn stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
+        instructions::stack::stack(ctx, amount)
+    }
+
+    pub fn unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
+        instructions::unstack::unstack(ctx, amount)
+    }
 }

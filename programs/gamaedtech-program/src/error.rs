@@ -10,4 +10,19 @@ pub enum ErrorCode {
 
     #[msg("The Proposal Has Already Expired")]
     ExpiredProposal,
+
+    #[msg("Funds already requested for this proposal.")]
+    AlreadyRequested,
+
+    #[msg("Proposal has not passed yet.")]
+    ProposalNotPassed,
+
+    #[msg("Proposal voting still active")]
+    VotingStillActive,
+
+    #[msg("Proposal Regected")]
+    ProposalRejected,
+
+    #[msg("Insufficient Stake")]
+    InsufficientStake,
 }

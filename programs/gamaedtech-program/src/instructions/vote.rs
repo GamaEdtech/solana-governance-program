@@ -33,7 +33,7 @@ pub struct Vote<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn proccess_vote(ctx: Context<Vote>, agree: bool) -> Result<()> {
+pub fn process_vote(ctx: Context<Vote>, agree: bool) -> Result<()> {
     let proposal = &mut ctx.accounts.proposal;
     let vote_record = &mut ctx.accounts.vote_record;
     let stake_account = &ctx.accounts.stake_account;

@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 use std::str::FromStr;
 
-pub fn stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
+pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
 
     // Ensure the token mint matches the allowed mint

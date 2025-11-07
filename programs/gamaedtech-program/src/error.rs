@@ -31,4 +31,10 @@ pub enum ErrorCode {
 
     #[msg("You can only stake the allowed token.")]
     InvalidTokenMint,
+
+    #[msg("Cooldown period still active.")]
+    CooldownActive,
+
+    #[msg("Nothing to claim.")]
+    NothingToClaim,
 }

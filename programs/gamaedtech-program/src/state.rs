@@ -47,6 +47,8 @@ pub struct StakeAccount {
     pub owner: Pubkey,        // Who owns this stake
     pub staked_amount: u64,   // Total tokens staked
     pub last_stake_time: i64, // For optional cooldown or reward logic
+    pub pending_unstake: u64,
+    pub unstake_requested_at: i64,
 }
 
 impl Space for StakeAccount {

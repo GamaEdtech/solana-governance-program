@@ -52,5 +52,5 @@ pub struct StakeAccount {
 }
 
 impl Space for StakeAccount {
-    const INIT_SPACE: usize = 32 + 8 + 8; // Pubkey + u64 + i64
+    const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 8; // Pubkey + u64 + i64
 }

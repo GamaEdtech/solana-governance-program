@@ -57,7 +57,7 @@ pub struct Stack<'info> {
         init_if_needed,
         payer = user,
         space = 8 + std::mem::size_of::<StakeAccount>(),
-        seeds = [b"stake-account", user.key().as_ref()],
+        seeds = [b"stake_account", user.key().as_ref()],
         bump,
     )]
     pub stake_account: Account<'info, StakeAccount>,

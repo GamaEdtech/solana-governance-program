@@ -31,7 +31,7 @@ pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
 pub struct Unstack<'info> {
     #[account(
         mut,
-        seeds = [b"stake-account", user.key().as_ref()],
+        seeds = [b"stake_account", user.key().as_ref()],
         bump,
     )]
     pub stake_account: Account<'info, StakeAccount>,
@@ -104,7 +104,7 @@ pub struct ClaimUnstake<'info> {
 
     #[account(
         mut,
-        seeds = [b"stake-account", user.key().as_ref()],
+        seeds = [b"stake_account", user.key().as_ref()],
         bump,
     )]
     pub stake_account: Account<'info, StakeAccount>,

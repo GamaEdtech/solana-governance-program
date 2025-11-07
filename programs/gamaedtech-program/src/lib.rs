@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 declare_id!("9F77hJsRRXs7vF9UDncZKth2r5wEPgcRkEfyoZDNQ3eK");
+const ALLOWED_MINT: &str = "GeutGuhcTYRf4rkbZmWDMEgjt5jHyJN4nHko38GJjQhv";
 
 use instructions::*;
 mod error;
@@ -39,7 +40,21 @@ pub mod gamaedtech_program {
         proccess_delete_proposal(ctx)
     }
 
-    pub fn vote(ctx: Context<Vote>, agree: bool, vote_power: u64) -> Result<()> {
-        proccess_vote(ctx, agree, vote_power)
+    pub fn vote(ctx: Context<Vote>, agree: bool) -> Result<()> {
+        process_vote(ctx, agree)
+    }
+    pub fn request_fund(ctx: Context<RequestFund>) -> Result<()> {
+        process_request_fund(ctx)
+    }
+
+    pub fn stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
+        instructions::stack::process_stack(ctx, amount)
+    }
+
+    pub fn unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
+        instructions::unstack::process_unstack(ctx, amount)
+    }
+    pub fn calim_unstack(ctx: Context<ClaimUnstake>) -> Result<()> {
+        instructions::unstack::process_claim_unstake(ctx)
     }
 }

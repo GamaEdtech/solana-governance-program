@@ -11,6 +11,7 @@ pub struct Proposal {
     pub disagree_votes: u64,
     pub created_at: i64, // Creation timestamp in seconds
     pub expires_at: i64, // Expiration timestamp in seconds
+    pub is_fund_requested: bool,
 }
 
 impl Space for Proposal {
@@ -39,4 +40,17 @@ pub struct VoteRecord {
     pub has_voted: bool,     // Prevent double voting
     pub vote: String,
     pub vote_power: u64,
+}
+
+#[account]
+pub struct StakeAccount {
+    pub owner: Pubkey,        // Who owns this stake
+    pub staked_amount: u64,   // Total tokens staked
+    pub last_stake_time: i64, // For optional cooldown or reward logic
+    pub pending_unstake: u64,
+    pub unstake_requested_at: i64,
+}
+
+impl Space for StakeAccount {
+    const INIT_SPACE: usize = 32 + 8 + 8; // Pubkey + u64 + i64
 }

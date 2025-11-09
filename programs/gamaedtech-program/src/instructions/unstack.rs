@@ -1,7 +1,9 @@
 use crate::error::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::token::{Mint, TokenAccount};
+use anchor_spl::token_2022::Token2022;
+use anchor_spl::token_interface::{self, TransferChecked};
 
 pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
@@ -60,19 +62,26 @@ pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
         ErrorCode::CooldownActive
     );
 
-    // Transfer tokens: vault → user
+    // Transfer tokens: vault → user using Token-2022 CPI
     let seeds: &[&[u8]] = &[b"vault-authority".as_ref(), &[ctx.bumps.vault_authority]];
     let signer = &[&seeds[..]];
+
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
-        Transfer {
+        TransferChecked {
             from: ctx.accounts.vault_token_account.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
             to: ctx.accounts.user_token_account.to_account_info(),
             authority: ctx.accounts.vault_authority.to_account_info(),
         },
         signer,
     );
-    token::transfer(cpi_ctx, stake_account.pending_unstake)?;
+
+    token_interface::transfer_checked(
+        cpi_ctx,
+        stake_account.pending_unstake,
+        ctx.accounts.mint.decimals,
+    )?;
 
     // Update stake info
     stake_account.staked_amount = stake_account
@@ -102,6 +111,10 @@ pub struct ClaimUnstake<'info> {
     )]
     pub vault_authority: UncheckedAccount<'info>,
 
+    /// Mint account of the Token-2022 token
+    #[account(mut)]
+    pub mint: Account<'info, Mint>,
+
     #[account(
         mut,
         seeds = [b"stake_account", user.key().as_ref()],
@@ -109,5 +122,5 @@ pub struct ClaimUnstake<'info> {
     )]
     pub stake_account: Account<'info, StakeAccount>,
 
-    pub token_program: Program<'info, Token>,
+    pub token_program: Program<'info, Token2022>,
 }

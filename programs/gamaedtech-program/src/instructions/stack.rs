@@ -2,9 +2,7 @@ use crate::error::ErrorCode;
 use crate::state::*;
 use crate::ALLOWED_MINT;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, TokenAccount};
-use anchor_spl::token_2022::Token2022;
-use anchor_spl::token_interface::{self, TransferChecked};
+use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked};
 use std::str::FromStr;
 
 pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
@@ -21,7 +19,7 @@ pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
         ErrorCode::InvalidTokenMint
     );
 
-    // Transfer tokens from user to vault using Token-2022 CPI
+    // Create CPI context for token transfer (Token-2022 compatible)
     let cpi_ctx = CpiContext::new(
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
@@ -32,9 +30,10 @@ pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
         },
     );
 
+    // Perform token transfer
     token_interface::transfer_checked(cpi_ctx, amount, decimals)?;
 
-    // Update stake account
+    // Update staking state
     stake_account.staked_amount = stake_account.staked_amount.saturating_add(amount);
     stake_account.last_stake_time = Clock::get()?.unix_timestamp;
     stake_account.owner = ctx.accounts.user.key();
@@ -44,26 +43,27 @@ pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct Stack<'info> {
+    /// The user performing the stake
     #[account(mut)]
     pub user: Signer<'info>,
 
-    // User's Token-2022 account
+    /// User's Token-2022 or legacy SPL token account
     #[account(
         mut,
         constraint = user_token_account.owner == user.key(),
         constraint = user_token_account.mint == Pubkey::from_str(ALLOWED_MINT).unwrap(),
     )]
-    pub user_token_account: Account<'info, TokenAccount>,
+    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    // Vault Token-2022 account
+    /// Vault Token-2022 or legacy SPL token account (where tokens are staked)
     #[account(mut)]
-    pub vault_token_account: Account<'info, TokenAccount>,
+    pub vault_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    // Mint account of the Token-2022 token
+    /// Token mint (Token-2022 or legacy SPL)
     #[account(mut)]
-    pub mint: Account<'info, Mint>,
+    pub mint: InterfaceAccount<'info, Mint>,
 
-    // Custom stake account
+    /// Custom stake account to track user's stake
     #[account(
         init_if_needed,
         payer = user,
@@ -73,8 +73,9 @@ pub struct Stack<'info> {
     )]
     pub stake_account: Account<'info, StakeAccount>,
 
-    // Token-2022 program
-    pub token_program: Program<'info, Token2022>,
+    /// The token program (can be Token-2022 or legacy SPL)
+    pub token_program: Interface<'info, TokenInterface>,
 
+    /// System program (for paying rent, etc.)
     pub system_program: Program<'info, System>,
 }

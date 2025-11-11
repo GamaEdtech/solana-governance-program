@@ -1,9 +1,9 @@
 use crate::error::ErrorCode;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, TokenAccount};
-use anchor_spl::token_2022::Token2022;
-use anchor_spl::token_interface::{self, TransferChecked};
+use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked};
+
+// ========== UNSTAKE REQUEST ==========
 
 pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
@@ -41,6 +41,8 @@ pub struct Unstack<'info> {
     pub user: Signer<'info>,
 }
 
+// ========== CLAIM AFTER COOLDOWN ==========
+
 pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
     let now = Clock::get()?.unix_timestamp;
@@ -62,10 +64,11 @@ pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
         ErrorCode::CooldownActive
     );
 
-    // Transfer tokens: vault → user using Token-2022 CPI
+    // Prepare signer seeds
     let seeds: &[&[u8]] = &[b"vault-authority".as_ref(), &[ctx.bumps.vault_authority]];
     let signer = &[&seeds[..]];
 
+    // Transfer tokens: vault → user
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
@@ -98,11 +101,13 @@ pub struct ClaimUnstake<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
+    // User token account (can be Token or Token-2022)
     #[account(mut)]
-    pub user_token_account: Account<'info, TokenAccount>,
+    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
+    // Vault token account (can be Token or Token-2022)
     #[account(mut)]
-    pub vault_token_account: Account<'info, TokenAccount>,
+    pub vault_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// CHECK: vault authority PDA
     #[account(
@@ -111,9 +116,9 @@ pub struct ClaimUnstake<'info> {
     )]
     pub vault_authority: UncheckedAccount<'info>,
 
-    /// Mint account of the Token-2022 token
+    // Token mint (can be Token or Token-2022)
     #[account(mut)]
-    pub mint: Account<'info, Mint>,
+    pub mint: InterfaceAccount<'info, Mint>,
 
     #[account(
         mut,
@@ -122,5 +127,6 @@ pub struct ClaimUnstake<'info> {
     )]
     pub stake_account: Account<'info, StakeAccount>,
 
-    pub token_program: Program<'info, Token2022>,
+    // Token program (TokenInterface supports both Token and Token-2022)
+    pub token_program: Interface<'info, TokenInterface>,
 }

@@ -16,6 +16,11 @@ pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
         ErrorCode::Unauthorized
     );
 
+    require!(
+        stake_account.pending_unstake == 0,
+        ErrorCode::AlreadyUnstaking
+    );
+
     // Check enough stake
     require!(
         stake_account.staked_amount >= amount,
@@ -29,11 +34,6 @@ pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
     // --- Update stats ---
     let stats = &mut ctx.accounts.stats;
     stats.total_staked = stats.total_staked.saturating_sub(amount);
-
-    // If user has no stake left, reduce active_voters
-    if stake_account.staked_amount == 0 && stats.active_voters > 0 {
-        stats.active_voters = stats.active_voters.saturating_sub(1);
-    }
 
     Ok(())
 }
@@ -62,7 +62,7 @@ pub struct Unstack<'info> {
 pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
     let now = Clock::get()?.unix_timestamp;
-    const COOLDOWN_PERIOD: i64 = 1 * 1 * 60 * 60; // 3 days
+    const COOLDOWN_PERIOD: i64 = 7 * 24 * 60 * 60; // 7 days
 
     // Ownership check
     require_keys_eq!(
@@ -114,6 +114,11 @@ pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
     // --- Update stats ---
     let stats = &mut ctx.accounts.stats;
     stats.treasury_balance = stats.treasury_balance.saturating_sub(unstake_amount);
+
+    // If user has no stake left, reduce active_voters
+    if stake_account.staked_amount == 0 && stats.active_voters > 0 {
+        stats.active_voters = stats.active_voters.saturating_sub(1);
+    }
 
     Ok(())
 }

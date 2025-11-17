@@ -26,6 +26,15 @@ pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
     stake_account.pending_unstake = amount;
     stake_account.unstake_requested_at = now;
 
+    // --- Update stats ---
+    let stats = &mut ctx.accounts.stats;
+    stats.total_staked = stats.total_staked.saturating_sub(amount);
+
+    // If user has no stake left, reduce active_voters
+    if stake_account.staked_amount == 0 && stats.active_voters > 0 {
+        stats.active_voters = stats.active_voters.saturating_sub(1);
+    }
+
     Ok(())
 }
 
@@ -38,6 +47,13 @@ pub struct Unstack<'info> {
     )]
     pub stake_account: Account<'info, StakeAccount>,
 
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump
+    )]
+    pub stats: Account<'info, Stats>,
+
     pub user: Signer<'info>,
 }
 
@@ -46,7 +62,7 @@ pub struct Unstack<'info> {
 pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
     let now = Clock::get()?.unix_timestamp;
-    const COOLDOWN_PERIOD: i64 = 3 * 24 * 60 * 60; // 3 days
+    const COOLDOWN_PERIOD: i64 = 1 * 1 * 60 * 60; // 3 days
 
     // Ownership check
     require_keys_eq!(
@@ -87,11 +103,17 @@ pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
     )?;
 
     // Update stake info
+    let unstake_amount = stake_account.pending_unstake;
+
     stake_account.staked_amount = stake_account
         .staked_amount
         .saturating_sub(stake_account.pending_unstake);
     stake_account.pending_unstake = 0;
     stake_account.unstake_requested_at = 0;
+
+    // --- Update stats ---
+    let stats = &mut ctx.accounts.stats;
+    stats.treasury_balance = stats.treasury_balance.saturating_sub(unstake_amount);
 
     Ok(())
 }
@@ -126,6 +148,13 @@ pub struct ClaimUnstake<'info> {
         bump,
     )]
     pub stake_account: Account<'info, StakeAccount>,
+
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump
+    )]
+    pub stats: Account<'info, Stats>,
 
     // Token program (TokenInterface supports both Token and Token-2022)
     pub token_program: Interface<'info, TokenInterface>,

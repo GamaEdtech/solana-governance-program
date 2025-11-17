@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
 declare_id!("9F77hJsRRXs7vF9UDncZKth2r5wEPgcRkEfyoZDNQ3eK");
 const ALLOWED_MINT: &str = "HyXdVykYjcgJwgBmeMmy59QHF4HncsH1TScdH97nqJYW";
+const ADMIN: &str = "4SwgW8pqrkCi3AdEqEU9dKGfi2qb4NWWGYkCayugJfrS";
 
+mod instructions;
 use instructions::*;
 mod error;
-mod instructions;
 mod state;
 
 #[cfg(not(feature = "no-entrypoint"))]
@@ -56,5 +57,9 @@ pub mod gamaedtech_program {
     }
     pub fn calim_unstack(ctx: Context<ClaimUnstake>) -> Result<()> {
         instructions::unstack::process_claim_unstake(ctx)
+    }
+
+    pub fn init_stats(ctx: Context<InitializeStats>) -> Result<()> {
+        instructions::init_stats::process_init_stats(ctx)
     }
 }

@@ -7,6 +7,7 @@ use std::str::FromStr;
 
 pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
+    let stats = &mut ctx.accounts.stats;
 
     // Get decimals from the mint
     let decimals = ctx.accounts.mint.decimals;
@@ -33,10 +34,21 @@ pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
     // Perform token transfer
     token_interface::transfer_checked(cpi_ctx, amount, decimals)?;
 
+    // --- Update staking state ---
+    let first_time_stake = stake_account.staked_amount == 0;
+
     // Update staking state
     stake_account.staked_amount = stake_account.staked_amount.saturating_add(amount);
     stake_account.last_stake_time = Clock::get()?.unix_timestamp;
     stake_account.owner = ctx.accounts.user.key();
+
+    // --- Update stats ---
+    stats.total_staked = stats.total_staked.saturating_add(amount);
+    stats.treasury_balance = stats.treasury_balance.saturating_add(amount);
+
+    if first_time_stake {
+        stats.active_voters = stats.active_voters.saturating_add(1);
+    }
 
     Ok(())
 }
@@ -72,6 +84,13 @@ pub struct Stack<'info> {
         bump,
     )]
     pub stake_account: Account<'info, StakeAccount>,
+
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump
+    )]
+    pub stats: Account<'info, Stats>,
 
     /// The token program (can be Token-2022 or legacy SPL)
     pub token_program: Interface<'info, TokenInterface>,

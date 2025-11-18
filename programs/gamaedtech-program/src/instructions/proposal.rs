@@ -38,7 +38,7 @@ pub struct SubmitProposal<'info> {
         mut,
         seeds = [b"stake_account", user.key().as_ref()],
         bump,
-        constraint = stake_account.staked_amount > 0 @ ErrorCode::InsufficientStake
+        constraint = stake_account.staked_amount >= 50_000_000_000_000 @ ErrorCode::InsufficientStake
     )]
     pub stake_account: Account<'info, StakeAccount>,
 

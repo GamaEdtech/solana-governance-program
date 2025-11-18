@@ -9,14 +9,13 @@ import * as anchor from "@coral-xyz/anchor";
     program.programId,
   );
 
-  console.log(statsPda)
-  await program.methods.initStats()
-    .accounts({
-      stats: statsPda,
+  
+  await program.methods.reallocStats()
+  .accounts({
+    stats: statsPda,
       authority: program.provider.publicKey,
-      systemProgram: anchor.web3.SystemProgram.programId,
-    })
-    .rpc();
+    systemProgram: anchor.web3.SystemProgram.programId,
+  })
 
-  console.log("Stats initialized:", statsPda.toString());
+  console.log("Stats realloced:", statsPda.toString());
 })();

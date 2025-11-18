@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 declare_id!("9F77hJsRRXs7vF9UDncZKth2r5wEPgcRkEfyoZDNQ3eK");
-const ALLOWED_MINT: &str = "GeutGuhcTYRf4rkbZmWDMEgjt5jHyJN4nHko38GJjQhv";
+const ALLOWED_MINT: &str = "HyXdVykYjcgJwgBmeMmy59QHF4HncsH1TScdH97nqJYW";
 const ADMIN: &str = "4SwgW8pqrkCi3AdEqEU9dKGfi2qb4NWWGYkCayugJfrS";
 
 mod instructions;
@@ -48,18 +48,21 @@ pub mod gamaedtech_program {
         process_request_fund(ctx)
     }
 
-    pub fn stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
-        instructions::stack::process_stack(ctx, amount)
+    pub fn stake(ctx: Context<Stake>, amount: u64) -> Result<()> {
+        instructions::stake::process_stake(ctx, amount)
     }
 
-    pub fn unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
-        instructions::unstack::process_unstack(ctx, amount)
+    pub fn unstake(ctx: Context<Unstake>, amount: u64) -> Result<()> {
+        instructions::unstake::process_unstake(ctx, amount)
     }
-    pub fn calim_unstack(ctx: Context<ClaimUnstake>) -> Result<()> {
-        instructions::unstack::process_claim_unstake(ctx)
+    pub fn calim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
+        instructions::unstake::process_claim_unstake(ctx)
     }
 
     pub fn init_stats(ctx: Context<InitializeStats>) -> Result<()> {
         instructions::init_stats::process_init_stats(ctx)
+    }
+    pub fn realloc_stats(ctx: Context<ReallocateStats>) -> Result<()> {
+        instructions::init_stats::process_realloc_stats(ctx)
     }
 }

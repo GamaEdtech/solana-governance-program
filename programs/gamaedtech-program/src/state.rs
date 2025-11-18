@@ -41,28 +41,41 @@ pub struct VoteRecord {
     pub vote: String,
     pub vote_power: u64,
 }
+// ========================= STAKE ACCOUNT =========================
 
 #[account]
 pub struct StakeAccount {
-    pub owner: Pubkey,        // Who owns this stake
-    pub staked_amount: u64,   // Total tokens staked
-    pub last_stake_time: i64, // For optional cooldown or reward logic
-    pub pending_unstake: u64,
-    pub unstake_requested_at: i64,
+    pub owner: Pubkey,             // User who owns this stake
+    pub staked_amount: u64,        // Total tokens currently staked
+    pub pending_rewards: u64,      // Rewards accumulated but not yet claimed
+    pub last_stake_time: i64,      // Timestamp of last stake action
+    pub pending_unstake: u64,      // Amount requested to unstake
+    pub unstake_requested_at: i64, // Timestamp when unstake was requested
 }
 
 impl Space for StakeAccount {
-    const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 8; // Pubkey + u64 + i64
+    // 8 discriminator
+    // 32 owner
+    // 8 staked_amount
+    // 8 pending_rewards
+    // 8 last_stake_time
+    // 8 pending_unstake
+    // 8 unstake_requested_at
+    const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 8 + 8;
 }
+
+// ========================= STATS ACCOUNT =========================
 
 #[account]
 pub struct Stats {
-    pub total_proposals: u64,  // total proposals created
-    pub active_voters: u64,    // number of active voters
-    pub proposals_passed: u64, // proposals that passed
-    pub treasury_balance: u64, // SOL or token balance in treasury
-    pub total_staked: u64,     // total staked amount
-    pub bump: u8,              // PDA bump for this account
+    pub total_proposals: u64,       // Total proposals created
+    pub active_voters: u64,         // Number of active voters
+    pub proposals_passed: u64,      // Successfully passed proposals
+    pub treasury_balance: u64,      // Treasury token or SOL balance
+    pub total_staked: u64,          // Total amount staked across all users
+    pub total_rewards: u64,         // All-time total rewards
+    pub total_claimed_rewards: u64, // Sum of claimed rewards for all users
+    pub bump: u8,                   // PDA bump
 }
 
 impl Space for Stats {
@@ -72,5 +85,7 @@ impl Space for Stats {
         + 8  // proposals_passed
         + 8  // treasury_balance
         + 8  // total_staked
+        + 8  // total_rewards_distributed
+        + 8  // total_unclaimed_rewards
         + 1; // bump
 }

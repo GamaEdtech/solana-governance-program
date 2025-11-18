@@ -30,13 +30,20 @@ pub struct Vote<'info> {
     )]
     pub stake_account: Account<'info, StakeAccount>,
 
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump
+    )]
+    pub stats: Account<'info, Stats>,
+
     pub system_program: Program<'info, System>,
 }
 
 pub fn process_vote(ctx: Context<Vote>, agree: bool) -> Result<()> {
     let proposal = &mut ctx.accounts.proposal;
     let vote_record = &mut ctx.accounts.vote_record;
-    let stake_account = &ctx.accounts.stake_account;
+    let stake_account = &mut ctx.accounts.stake_account;
 
     let current_time = Clock::get()?.unix_timestamp;
     require!(
@@ -61,6 +68,13 @@ pub fn process_vote(ctx: Context<Vote>, agree: bool) -> Result<()> {
         proposal.disagree_votes += vote_power;
         vote_record.vote = "disagree".to_string();
     }
+
+    // Reward voter with +1% of their stake
+    let reward = vote_power / 100; // 1%
+    stake_account.pending_rewards = stake_account.pending_rewards.saturating_add(reward);
+
+    let stats = &mut ctx.accounts.stats;
+    stats.total_rewards = stats.total_rewards.saturating_add(reward);
 
     Ok(())
 }

@@ -5,11 +5,11 @@ pub mod vote;
 pub use fund::*;
 pub mod fund;
 
-pub mod stack;
-pub mod unstack;
+pub mod stake;
+pub mod unstake;
 
-pub use stack::*;
-pub use unstack::*;
+pub use stake::*;
+pub use unstake::*;
 
 pub mod init_stats;
 pub use init_stats::*;

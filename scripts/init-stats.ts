@@ -9,7 +9,6 @@ import * as anchor from "@coral-xyz/anchor";
     program.programId,
   );
 
-  console.log(statsPda)
   await program.methods.initStats()
     .accounts({
       stats: statsPda,

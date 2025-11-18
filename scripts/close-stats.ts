@@ -17,14 +17,14 @@ import * as anchor from "@coral-xyz/anchor";
 
   // 2 Run realloc instruction
   try {
-    await program.methods.reallocStats().accounts({
+    await program.methods.closeStats().accounts({
       stats: statsPda,
       authority: program.provider.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     }).rpc();
-    console.log("Realloc instruction executed.");
+    console.log("Close instruction executed.");
   } catch (err) {
-    console.log("Realloc failed:", err);
+    console.log("Close failed:", err);
     return;
   }
 

@@ -65,4 +65,7 @@ pub mod gamaedtech_program {
     pub fn realloc_stats(ctx: Context<ReallocateStats>) -> Result<()> {
         instructions::init_stats::process_realloc_stats(ctx)
     }
+    pub fn close_stats(ctx: Context<CloseStats>) -> Result<()> {
+        instructions::init_stats::process_close_stats(ctx)
+    }
 }

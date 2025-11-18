@@ -72,10 +72,33 @@ pub fn process_realloc_stats(ctx: Context<ReallocateStats>) -> Result<()> {
         ErrorCode::Unauthorized
     );
 
-    // Initialize the new fields to 0 if needed
-    let stats = &mut ctx.accounts.stats;
-    stats.total_rewards = 0;
-    stats.total_claimed_rewards = 0;
+    Ok(())
+}
 
+#[derive(Accounts)]
+pub struct CloseStats<'info> {
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump = stats.bump,
+        close = authority        // sends lamports to authority
+    )]
+    pub stats: Account<'info, Stats>,
+
+    #[account(mut)]
+    pub authority: Signer<'info>, // must be admin
+
+    pub system_program: Program<'info, System>,
+}
+
+pub fn process_close_stats(ctx: Context<CloseStats>) -> Result<()> {
+    let admin_pubkey = Pubkey::from_str(ADMIN).map_err(|_| ErrorCode::Unauthorized)?;
+    require!(
+        ctx.accounts.authority.key() == admin_pubkey,
+        ErrorCode::Unauthorized
+    );
+
+    // Nothing else needed. Anchor handles closing.
+    msg!("Stats PDA closed successfully.");
     Ok(())
 }

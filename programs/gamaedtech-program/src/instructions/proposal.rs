@@ -1,5 +1,6 @@
 use crate::error::ErrorCode;
-use crate::state::{Proposal, StakeAccount, UserState};
+use crate::state::{Proposal, StakeAccount, Stats, UserState};
+use crate::ADMIN;
 use anchor_lang::prelude::*;
 use std::str::FromStr;
 
@@ -35,10 +36,19 @@ pub struct SubmitProposal<'info> {
 
     #[account(
         mut,
-        seeds = [b"stake-account", user.key().as_ref()],
+        seeds = [b"stake_account", user.key().as_ref()],
         bump,
+        constraint = stake_account.staked_amount > 0 @ ErrorCode::InsufficientStake
     )]
     pub stake_account: Account<'info, StakeAccount>,
+
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump
+    )]
+    pub stats: Account<'info, Stats>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -52,12 +62,8 @@ pub fn proccess_create_proposal(
 ) -> Result<()> {
     let proposal = &mut ctx.accounts.proposal;
     let user_state = &mut ctx.accounts.user_state;
+    let stats = &mut ctx.accounts.stats;
     let user = &ctx.accounts.user;
-    let stake_account = &ctx.accounts.stake_account;
-
-    // Use staked amount as vote power
-    let stack_amount = stake_account.staked_amount;
-    require!(stack_amount > 0, ErrorCode::NoStakePower);
 
     proposal.owner = user.key();
     proposal.title = title;
@@ -72,12 +78,13 @@ pub fn proccess_create_proposal(
     // Increment user's proposal count so next proposal PDA is unique
     user_state.proposal_count = user_state.proposal_count.checked_add(1).unwrap();
 
+    // --- Update stats ---
+    stats.total_proposals = stats.total_proposals.checked_add(1).unwrap();
+
     Ok(())
 }
 
 //End create propsoal
-
-const ADMIN: &str = "9amABYwZ73MtduGjWD3Ne3LUyf9PgCeK7nrnALX3KQM1";
 
 //Delete proposal
 #[derive(Accounts)]

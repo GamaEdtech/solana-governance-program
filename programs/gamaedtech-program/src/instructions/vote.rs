@@ -25,7 +25,7 @@ pub struct Vote<'info> {
 
     #[account(
         mut,
-        seeds = [b"stake-account", voter.key().as_ref()],
+        seeds = [b"stake_account", voter.key().as_ref()],
         bump,
     )]
     pub stake_account: Account<'info, StakeAccount>,

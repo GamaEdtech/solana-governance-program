@@ -37,4 +37,7 @@ pub enum ErrorCode {
 
     #[msg("Nothing to claim.")]
     NothingToClaim,
+
+    #[msg("Already Unstaking")]
+    AlreadyUnstaking,
 }

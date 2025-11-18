@@ -52,5 +52,25 @@ pub struct StakeAccount {
 }
 
 impl Space for StakeAccount {
-    const INIT_SPACE: usize = 32 + 8 + 8; // Pubkey + u64 + i64
+    const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 8; // Pubkey + u64 + i64
+}
+
+#[account]
+pub struct Stats {
+    pub total_proposals: u64,  // total proposals created
+    pub active_voters: u64,    // number of active voters
+    pub proposals_passed: u64, // proposals that passed
+    pub treasury_balance: u64, // SOL or token balance in treasury
+    pub total_staked: u64,     // total staked amount
+    pub bump: u8,              // PDA bump for this account
+}
+
+impl Space for Stats {
+    const INIT_SPACE: usize = 8   // discriminator
+        + 8  // total_proposals
+        + 8  // active_voters
+        + 8  // proposals_passed
+        + 8  // treasury_balance
+        + 8  // total_staked
+        + 1; // bump
 }

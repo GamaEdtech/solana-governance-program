@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked};
 use std::str::FromStr;
 
-pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
+pub fn process_stake(ctx: Context<Stake>, amount: u64) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
     let stats = &mut ctx.accounts.stats;
 
@@ -54,7 +54,7 @@ pub fn process_stack(ctx: Context<Stack>, amount: u64) -> Result<()> {
 }
 
 #[derive(Accounts)]
-pub struct Stack<'info> {
+pub struct Stake<'info> {
     /// The user performing the stake
     #[account(mut)]
     pub user: Signer<'info>,

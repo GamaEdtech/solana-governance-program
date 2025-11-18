@@ -5,11 +5,11 @@ use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, Tran
 
 // ========== UNSTAKE REQUEST ==========
 
-pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
+pub fn process_unstake(ctx: Context<Unstake>, amount: u64) -> Result<()> {
     let stake_account = &mut ctx.accounts.stake_account;
     let now = Clock::get()?.unix_timestamp;
 
-    // Only owner can unstack
+    // Only owner can unstake
     require_keys_eq!(
         stake_account.owner,
         ctx.accounts.user.key(),
@@ -39,7 +39,7 @@ pub fn process_unstack(ctx: Context<Unstack>, amount: u64) -> Result<()> {
 }
 
 #[derive(Accounts)]
-pub struct Unstack<'info> {
+pub struct Unstake<'info> {
     #[account(
         mut,
         seeds = [b"stake_account", user.key().as_ref()],
@@ -74,7 +74,7 @@ pub fn process_claim_unstake(ctx: Context<ClaimUnstake>) -> Result<()> {
     // Ensure user has a pending unstake
     require!(stake_account.pending_unstake > 0, ErrorCode::NothingToClaim);
 
-    // Enforce 3-day cooldown
+    // Enforce 7-day cooldown
     require!(
         now.saturating_sub(stake_account.unstake_requested_at) >= COOLDOWN_PERIOD,
         ErrorCode::CooldownActive

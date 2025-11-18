@@ -17,3 +17,5 @@ wallet = "authority-wallet.json"
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 init-stats = "ts-node scripts/init-stats.ts"
+realloc-stats = "ts-node scripts/realloc-stats.ts"
+close-stats = "ts-node scripts/close-stats.ts"

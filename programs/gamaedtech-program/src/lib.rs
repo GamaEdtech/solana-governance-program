@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 declare_id!("9F77hJsRRXs7vF9UDncZKth2r5wEPgcRkEfyoZDNQ3eK");
-const ALLOWED_MINT: &str = "HyXdVykYjcgJwgBmeMmy59QHF4HncsH1TScdH97nqJYW";
+const ALLOWED_MINT: &str = "GeutGuhcTYRf4rkbZmWDMEgjt5jHyJN4nHko38GJjQhv";
 const ADMIN: &str = "4SwgW8pqrkCi3AdEqEU9dKGfi2qb4NWWGYkCayugJfrS";
 
 mod instructions;

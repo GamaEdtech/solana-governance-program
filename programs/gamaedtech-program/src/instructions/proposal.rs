@@ -64,6 +64,7 @@ pub fn proccess_create_proposal(
     let user_state = &mut ctx.accounts.user_state;
     let stats = &mut ctx.accounts.stats;
     let user = &ctx.accounts.user;
+    let stake_info = &mut ctx.accounts.stake_account;
 
     proposal.owner = user.key();
     proposal.title = title;
@@ -75,11 +76,26 @@ pub fn proccess_create_proposal(
     proposal.created_at = Clock::get()?.unix_timestamp;
     proposal.expires_at = proposal.created_at + 3600 * 24 * 7;
 
+    // Assign the unique ID
+    proposal.id = user_state.proposal_count;
+
     // Increment user's proposal count so next proposal PDA is unique
-    user_state.proposal_count = user_state.proposal_count.checked_add(1).unwrap();
+    user_state.proposal_count = user_state
+        .proposal_count
+        .checked_add(1)
+        .ok_or(ErrorCode::MathOverflow)?;
+
+    // Reward proposal with +1% of their stake
+    let reward = stake_info.staked_amount / 100; // 1%
+    stake_info.pending_rewards = stake_info.pending_rewards.saturating_add(reward);
 
     // --- Update stats ---
-    stats.total_proposals = stats.total_proposals.checked_add(1).unwrap();
+    stats.total_proposals = stats
+        .total_proposals
+        .checked_add(1)
+        .ok_or(ErrorCode::MathOverflow)?;
+
+    stats.total_rewards = stats.total_rewards.saturating_add(reward);
 
     Ok(())
 }
@@ -89,21 +105,56 @@ pub fn proccess_create_proposal(
 //Delete proposal
 #[derive(Accounts)]
 pub struct DeleteProposal<'info> {
-    #[account(mut,close=user)]
+    #[account(
+        mut,
+        close = user,
+        seeds = [
+        b"proposal",
+        proposal.owner.as_ref(),
+        proposal.id.to_le_bytes().as_ref()
+        ],
+        bump
+    )]
     pub proposal: Account<'info, Proposal>,
+
+    #[account(
+        mut,
+        seeds = [b"stake_account", proposal.owner.as_ref()],
+        bump,
+    )]
+    pub stake_account: Account<'info, StakeAccount>,
+
+    #[account(
+        mut,
+        seeds = [b"stats"],
+        bump
+    )]
+    pub stats: Account<'info, Stats>,
+
     #[account(mut)]
-    pub user: SystemAccount<'info>,
+    pub user: Signer<'info>,
 }
 
 pub fn proccess_delete_proposal(ctx: Context<DeleteProposal>) -> Result<()> {
     let proposal = &ctx.accounts.proposal;
     let user = &ctx.accounts.user;
+    let stats = &mut ctx.accounts.stats;
+    let stake_info = &mut ctx.accounts.stake_account;
 
     let admin_pubkey = Pubkey::from_str(ADMIN).unwrap();
 
     if proposal.owner != user.key() && user.key() != admin_pubkey {
         return Err(ErrorCode::Unauthorized.into());
     }
+
+    // Reward proposal with -1% of their stake
+    let reward = stake_info.staked_amount / 100; // 1%
+    stake_info.pending_rewards = stake_info.pending_rewards.saturating_sub(reward);
+
+    // --- Update stats ---
+    stats.total_proposals = stats.total_proposals.checked_sub(1).unwrap();
+    stats.total_rewards = stats.total_rewards.saturating_sub(reward);
+
     Ok(())
 }
 

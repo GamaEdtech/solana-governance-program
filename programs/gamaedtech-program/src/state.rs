@@ -24,7 +24,8 @@ impl Space for Proposal {
         8 +         // agree_votes
         8 +         // disagree_votes
         8 +         // created_at
-        8; // expires_at
+        8 + // expires_at
+        1; // is fund requested
 }
 
 #[account]

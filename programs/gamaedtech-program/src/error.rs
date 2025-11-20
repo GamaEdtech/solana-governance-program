@@ -40,4 +40,7 @@ pub enum ErrorCode {
 
     #[msg("Already Unstaking")]
     AlreadyUnstaking,
+
+    #[msg("Math Overflow")]
+    MathOverflow,
 }

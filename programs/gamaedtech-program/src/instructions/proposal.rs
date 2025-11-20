@@ -76,9 +76,6 @@ pub fn proccess_create_proposal(
     proposal.created_at = Clock::get()?.unix_timestamp;
     proposal.expires_at = proposal.created_at + 3600 * 24 * 7;
 
-    // Assign the unique ID
-    proposal.id = user_state.proposal_count;
-
     // Increment user's proposal count so next proposal PDA is unique
     user_state.proposal_count = user_state
         .proposal_count
@@ -107,13 +104,7 @@ pub fn proccess_create_proposal(
 pub struct DeleteProposal<'info> {
     #[account(
         mut,
-        close = user,
-        seeds = [
-        b"proposal",
-        proposal.owner.as_ref(),
-        proposal.id.to_le_bytes().as_ref()
-        ],
-        bump
+        close = user
     )]
     pub proposal: Account<'info, Proposal>,
 

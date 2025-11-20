@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct Proposal {
     pub owner: Pubkey,
-    pub id: u64,
     pub title: String,
     pub brief: String,
     pub cate: String,
@@ -17,7 +16,6 @@ pub struct Proposal {
 
 impl Space for Proposal {
     const INIT_SPACE: usize = 32 +        // owner
-        8 +         // id
         (4 + 100) + // title
         (4 + 800) + // brief
         (4 + 50) +  // cate

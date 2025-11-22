@@ -11,7 +11,7 @@ solana_program = "9F77hJsRRXs7vF9UDncZKth2r5wEPgcRkEfyoZDNQ3eK"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "Mainnet"
 wallet = "authority-wallet.json"
 
 [scripts]
@@ -19,3 +19,4 @@ test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 init-stats = "ts-node scripts/init-stats.ts"
 realloc-stats = "ts-node scripts/realloc-stats.ts"
 close-stats = "ts-node scripts/close-stats.ts"
+init-vault = "ts-node scripts/init-vault.ts"
